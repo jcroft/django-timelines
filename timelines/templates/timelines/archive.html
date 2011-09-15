@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Timeline{% if timeline_for %} for {{ timeline_for }}{% endif %}{% endblock %}
+
+{% block content %}
+  {% autopaginate items 30 %}
+  {% if not invalid_page %}
+    {% if items %}
+      {% for item in items %}
+        {% ifchanged item.timestamp.day %}
+          {% if timeline_for %}
+            <h3><a href="{% url timelines_day username=timeline_for.username, year=item.timestamp.year, month=item.timestamp|date:"b", day=item.timestamp|date:"d" %}">{{ item.timestamp|date:"F jS, Y" }}</a></h3>
+          {% else %}
+            <h3><a href="{% url timelines_day item.timestamp.year,item.timestamp|date:"b",item.timestamp|date:"d" %}">{{ item.timestamp|date:"F jS, Y" }}</a></h3>
+          {% endif %}
+        {% endifchanged %}
+        <p><a href="{{ item.get_absolute_url }}">{{ item.content_object }}</a></p>
+      {% endfor %}
+    {% else %}
+      <p>There are no items.</p>
+    {% endif %}
+  {% endif %}
+{% paginate 2 %}
+{% endblock %}
+
+{% block sidebar %}
+  {% load calendar %}
+  <h5>{% now "F" %}</h5>
+  {% calendar %}
+  {% include "timelines/snippets/model_chooser.html" %}
+  <h5>Content archives</h5>
+  <ul>
+    {% for year in date_list %}
+      <li><a href="{% url timelines_archive %}{{ year|date:"Y" }}/">{{ year|date:"Y" }}</a></li>
+    {% endfor %}
+  </ul>
+{% endblock %}
